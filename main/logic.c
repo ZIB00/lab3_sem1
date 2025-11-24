@@ -15,9 +15,14 @@ int Queue() {
     b.next = &c;
     c.next = NULL;
 
-    printf("%d ", a.data);
-    printf("%d ", b.data);
-    printf("%d ", c.data);
+    Node * p;
+    p = list;
+    printf("%d ", p->data);
+    p = p->next;
+    printf("%d ", p->data);
+    p = p->next;
+    printf("%d ", p->data);
+    p = p->next;
     printf("\n");
 
     return 0;
