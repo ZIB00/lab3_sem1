@@ -5,7 +5,7 @@
 int main() {
     setlocale(LC_ALL, "Russian");
 
-    Queue();
+    queue();
     printf("ypa");
     return 0;
 }
