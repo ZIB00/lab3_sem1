@@ -22,13 +22,33 @@ void push(Node ** plist, int d) {
     *plist = p;
 }
 
+int pop(Node ** plist) {
+    Node * p = *plist;
+    int res = p->data;
+    *plist = p->next;
+    free(p);
+    return res;
+}
+
+int is_empty(Node * list) {
+    return list == NULL;
+}
+
 int Queue() {
     int test[] = {21, 17, 3, 10};
     Node * list = NULL;
-    Node a = {3}, b = {17}, c = {21}, t = {10};
+    printf("Empty: %s\n", is_empty(list) ? "YES" : "NO");
     for (size_t i = 0; i < sizeof(test)/sizeof(test[0]); i++) {
         push(&list, test[i]);
         print(list);
     }
+    printf("Empty: %s\n", is_empty(list) ? "YES" : "NO");
+
+    while (!is_empty(list)) {
+        int d = pop(&list);
+        printf("pop %d :", d);
+        print(list);
+    }
+    printf("Empty: %s\n", is_empty(list) ? "YES" : "NO");
     return 0;
 }
