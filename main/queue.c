@@ -6,12 +6,33 @@ typedef struct Node {
     struct Node * next;
 } Node;
 
-void print(Node * list) {
-    for (Node * p = list; p != NULL; p = p->next) {
-        printf("%d ", p->data);
-    }
-    printf("\n");
+typedef struct Queue { 
+    Node * head; 
+    Node * tail; 
+} Queue;
+
+void print(Queue * q) { 
+    Node * p = q->head; 
+    for (p; p != NULL; p = p->next) { 
+        printf("%d ", p->data); 
+    } 
+    printf("\n"); 
 }
+
+void enqueue1(Queue * q, int data) {
+    Node * new_Node = malloc(sizeof(Node));
+    new_Node->data = data;
+    new_Node->next = NULL;
+
+    if (q->head == NULL) {
+        q->head = new_Node;
+        q->tail = new_Node;
+    } else {
+        q->tail->next = new_Node;
+        q->tail = new_Node;
+    }
+}
+
 
 void enqueue(Node ** phead, Node ** ptail, int d) {
     Node * p = malloc(sizeof(Node));
