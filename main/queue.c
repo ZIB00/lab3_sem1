@@ -1,55 +1,53 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Node {
-    int data;
-    struct Node * next;
-} Node;
+typedef struct Elem {
+    int inf;
+    struct Elem * link;
+} Elem;
 
-typedef struct Queue { 
-    Node * head; 
-    Node * tail; 
-} Queue;
-
-void print(Queue * q) { 
-    Node * p = q->head; 
-    for (p; p != NULL; p = p->next) { 
-        printf("%d ", p->data); 
+void print(Elem * BegQ) { 
+    Elem * p = BegQ;
+    for (p; p != NULL; p = p->link) { 
+        printf("%d ", p->inf); 
     } 
     printf("\n"); 
 }
 
-void enqueue(Queue * q, int data) {
-    Node * new_Node = malloc(sizeof(Node));
-    new_Node->data = data;
-    new_Node->next = NULL;
+void enqueue(Elem ** BegQ, Elem ** EndQ, int inf) {
+    Elem * p;
+    p = (Elem *)malloc(sizeof(Elem));
+    p->inf = inf;
+    p->link = NULL;
 
-    if (q->head == NULL) {
-        q->head = new_Node;
-        q->tail = new_Node;
+    if (is_empty(BegQ)) {
+        *BegQ = p;
+        *EndQ = p;
     } else {
-        q->tail->next = new_Node;
-        q->tail = new_Node;
+        (*EndQ)->link = p;
+        *EndQ = p;
     }
 }
-int is_empty(Queue * q) {
-    if (q->head == NULL) {
+
+int is_empty(Elem ** BegQ) {
+    if (*BegQ == NULL) {
         return 1;
     } else {
         return 0;
     }
 }
-int dequeue(Queue * q, int * r) {
-    if (!is_empty(q)) {
-        Node * old_head = q->head;
-        *r = q->head->data;
-        q->head = q->head->next;
+int dequeue(Elem ** BegQ, Elem ** EndQ, int * r) {
+    Elem * p;
+    if (!is_empty(BegQ)) {
+        p = *BegQ;
+        *r = p->inf;
+        (*BegQ) = (*BegQ)->link;
 
-        if (q->head == NULL) {
-            q->tail = NULL;
+        if (*BegQ == NULL) {
+            *EndQ = NULL;
         }
 
-        free(old_head);
+        free(p);
         return 1;
     }
     return 0;
@@ -57,24 +55,26 @@ int dequeue(Queue * q, int * r) {
 
 int queue() {
     int test[] = {21, 17, 3, 10};
-    int res, *r = res;
-    Queue * q = {NULL, NULL};
+    int res;
+    Elem * BegQ = NULL;
+    Elem * EndQ = NULL;
 
-    printf("Empty: %s\n", is_empty(q) ? "YES" : "NO");
+
+    printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
 
     for (size_t i = 0; i < sizeof(test)/sizeof(test[0]); i++) {
-        enqueue(&q, test[i]);
-        print(q);
+        enqueue(&BegQ, &EndQ, test[i]);
+        print(BegQ);
     }
 
-    printf("Empty: %s\n", is_empty(q) ? "YES" : "NO");
+    printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
 
-    while (!is_empty(q)) {
-        int d = dequeue(q, &r);
-        printf("pop %d :", d);
-        print(q);
+    while (!is_empty(&BegQ)) {
+        dequeue(&BegQ, &EndQ, &res);
+        printf("pop %d :", res);
+        print(BegQ);
     }
 
-    printf("Empty: %s\n", is_empty(q) ? "YES" : "NO");
+    printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
     return 0;
 }
