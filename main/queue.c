@@ -8,10 +8,18 @@ typedef struct Elem {
 
 void print(Elem * BegQ) { 
     Elem * p = BegQ;
-    for (p; p != NULL; p = p->link) { 
+    for (; p != NULL; p = p->link) { 
         printf("%d ", p->inf); 
     } 
     printf("\n"); 
+}
+
+int is_empty(Elem ** BegQ) {
+    if (*BegQ == NULL) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 void enqueue(Elem ** BegQ, Elem ** EndQ, int inf) {
@@ -29,13 +37,7 @@ void enqueue(Elem ** BegQ, Elem ** EndQ, int inf) {
     }
 }
 
-int is_empty(Elem ** BegQ) {
-    if (*BegQ == NULL) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
+
 int dequeue(Elem ** BegQ, Elem ** EndQ, int * r) {
     Elem * p;
     if (!is_empty(BegQ)) {
@@ -53,24 +55,31 @@ int dequeue(Elem ** BegQ, Elem ** EndQ, int * r) {
     return 0;
 }
 
-void direct_sort(Elem ** BegQ, Elem ** EndQ) {
-    Elem * start = *BegQ, *start_prev = NULL;
-    Elem * min = *BegQ, *min_prev = NULL;
-    Elem * curr = start->link, *curr_prev = start;
-    int m = (*BegQ)->inf;
-    while (start != NULL) {
-        while(min != NULL) {
-            if (m > min->inf) {
-                m = min->inf;
+void direct_sort_classic(Elem ** BegQ, Elem ** EndQ) {
+    Elem * BegQ2 = NULL;
+    Elem * EndQ2 = NULL;
+    int min = (*BegQ)->inf;
+    int curr = 0;
+    Elem * p = *BegQ;
+    while (*BegQ != NULL) {
+        min = p->inf;
+        while (p!= NULL) {
+            if (min > p->inf) {
+                min = p->inf;
             }
-            min_prev = min;
-            min = min->link;
+            p = p->link;
         }
-        start_prev = start;
-        start = start->link;
+        dequeue(BegQ, EndQ, &curr);
+        if (curr == min) {
+           enqueue(&BegQ2, &EndQ2, curr);
+        } else {
+           enqueue(BegQ, EndQ, curr);
+        }
+        p = *BegQ;
     }
-    *EndQ = start_prev;
-}
+    *BegQ = BegQ2;
+    *EndQ = EndQ2;
+}    
 
 
 int queue() {
@@ -86,6 +95,9 @@ int queue() {
         enqueue(&BegQ, &EndQ, test[i]);
         print(BegQ);
     }
+
+    direct_sort_classic(&BegQ, &EndQ);
+    print(BegQ);
 
     printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
 
