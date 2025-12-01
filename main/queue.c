@@ -53,6 +53,26 @@ int dequeue(Elem ** BegQ, Elem ** EndQ, int * r) {
     return 0;
 }
 
+void direct_sort(Elem ** BegQ, Elem ** EndQ) {
+    Elem * start = *BegQ, *start_prev = NULL;
+    Elem * min = *BegQ, *min_prev = NULL;
+    Elem * curr = start->link, *curr_prev = start;
+    int m = (*BegQ)->inf;
+    while (start != NULL) {
+        while(min != NULL) {
+            if (m > min->inf) {
+                m = min->inf;
+            }
+            min_prev = min;
+            min = min->link;
+        }
+        start_prev = start;
+        start = start->link;
+    }
+    *EndQ = start_prev;
+}
+
+
 int queue() {
     int test[] = {21, 17, 3, 10};
     int res;
