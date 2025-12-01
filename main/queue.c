@@ -81,6 +81,51 @@ void direct_sort_classic(Elem ** BegQ, Elem ** EndQ) {
     *EndQ = EndQ2;
 }    
 
+void Hoara_sort(Elem ** BegQ, Elem ** EndQ) {
+    if (!is_empty(BegQ)) {
+        Elem * BegQless = NULL, * BegQequal = NULL, *BegQmore = NULL;
+        Elem * EndQless = NULL, * EndQequal = NULL, *EndQmore = NULL;
+        int pivot = (*BegQ)->inf, temp = 0;
+        while (!is_empty(BegQ)) {
+            dequeue(BegQ, EndQ, &temp);
+            if (pivot > temp) {
+                enqueue(&BegQless, &EndQless, temp);
+            } 
+            else if (pivot == temp) {
+                enqueue(&BegQequal, &EndQequal, temp);
+            } 
+            else {
+                enqueue(&BegQmore, &EndQmore, temp);
+            }
+        }
+        if (!is_empty(&BegQless)) {
+            Hoara_sort(&BegQless, &EndQless);
+        }
+        if (!is_empty(&BegQmore)) {
+            Hoara_sort(&BegQmore, &EndQmore);
+        }
+        if (is_empty(&BegQless) && !is_empty(&BegQmore)) {
+            *BegQ = BegQequal;
+            EndQequal->link = BegQmore;
+            *EndQ = EndQmore;
+        }
+        else if (is_empty(&BegQmore) && !is_empty(&BegQless)) {
+            *BegQ = BegQless;
+            EndQless->link = BegQequal;
+            *EndQ = EndQequal;
+        }
+        else if (is_empty(&BegQless) && is_empty(&BegQmore)) {
+            *BegQ = BegQequal;
+            *EndQ = EndQequal;
+        } else {
+            *BegQ = BegQless;
+            EndQless->link = BegQequal;
+            EndQequal->link = BegQmore;
+            *EndQ = EndQmore;
+        }
+    }
+}
+
 
 int queue() {
     int test[] = {21, 17, 3, 10};
@@ -108,5 +153,13 @@ int queue() {
     }
 
     printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
+
+    for (size_t i = 0; i < sizeof(test)/sizeof(test[0]); i++) {
+        enqueue(&BegQ, &EndQ, test[i]);
+        print(BegQ);
+    }
+
+    Hoara_sort(&BegQ, &EndQ);
+    print(BegQ);
     return 0;
 }
