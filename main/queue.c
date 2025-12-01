@@ -128,38 +128,65 @@ void Hoara_sort(Elem ** BegQ, Elem ** EndQ) {
 
 
 int queue() {
-    int test[] = {21, 17, 3, 10};
+    char ch;
+    int num, flag = 1, test;
     int res;
-    Elem * BegQ = NULL;
-    Elem * EndQ = NULL;
+    Elem * BegQdirect = NULL, *EndQdirect = NULL;
+    Elem * BegQHoara = NULL, *EndQHoara = NULL;
 
+    while (1) {
+        printf("Введите число: ");
+        if (scanf("%d", &num) == 1) {
+            break; // успешно
+        }
+        printf("Ошибка! Это не число.\n");
 
-    printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
-
-    for (size_t i = 0; i < sizeof(test)/sizeof(test[0]); i++) {
-        enqueue(&BegQ, &EndQ, test[i]);
-        print(BegQ);
+        // очищаем stdin
+        int c;
+        while ((c = fgetc(stdin)) != '\n' && c != EOF);  
     }
+    while (1) {
+        while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
+            enqueue(&BegQdirect, &EndQdirect, num);
+            enqueue(&BegQHoara, &EndQHoara, num);
 
-    direct_sort_classic(&BegQ, &EndQ);
-    print(BegQ);
+        }
+        
+        
+        printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
 
-    printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
-
-    while (!is_empty(&BegQ)) {
-        dequeue(&BegQ, &EndQ, &res);
-        printf("pop %d :", res);
         print(BegQ);
-    }
 
-    printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
-
-    for (size_t i = 0; i < sizeof(test)/sizeof(test[0]); i++) {
-        enqueue(&BegQ, &EndQ, test[i]);
+        direct_sort_classic(&BegQ, &EndQ);
         print(BegQ);
-    }
 
-    Hoara_sort(&BegQ, &EndQ);
-    print(BegQ);
+        printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
+
+        while (!is_empty(&BegQ)) {
+            dequeue(&BegQ, &EndQ, &res);
+            printf("pop %d :", res);
+            print(BegQ);
+        }
+
+        printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
+
+        for (size_t i = 0; i < sizeof(test)/sizeof(test[0]); i++) {
+            enqueue(&BegQ, &EndQ, test[i]);
+        print(BegQ);
+        
+
+        Hoara_sort(&BegQ, &EndQ);
+        print(BegQ);
+
+        printf("Повторить работу? (1 - да, 0 - нет)");
+        printf("(Программа считает только первый символ)\n");
+        
+        
+        if (scanf("%c", &ch) == 1) {
+            if (ch == '0') {
+                break;
+            }
+        }
+    }
     return 0;
 }
