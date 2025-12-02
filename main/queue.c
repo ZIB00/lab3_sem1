@@ -23,9 +23,13 @@ int is_empty(Elem ** BegQ) {
     }
 }
 
-void enqueue(Elem ** BegQ, Elem ** EndQ, int inf) {
+int enqueue(Elem ** BegQ, Elem ** EndQ, int inf) {
     Elem * p;
     p = (Elem *)malloc(sizeof(Elem));
+    if (p == NULL) {
+        fprintf(stderr, "Ошибка выделения памяти\n");
+        return 0;
+    }
     p->inf = inf;
     p->link = NULL;
 
@@ -36,6 +40,7 @@ void enqueue(Elem ** BegQ, Elem ** EndQ, int inf) {
         (*EndQ)->link = p;
         *EndQ = p;
     }
+    return 1;
 }
 
 
@@ -84,9 +89,10 @@ void direct_sort_classic(Elem ** BegQ, Elem ** EndQ) {
 
 void Hoara_sort(Elem ** BegQ, Elem ** EndQ) {
     if (!is_empty(BegQ)) {
+        //Идея: 3 очереди - меньше, равно, больше опорного элемента, рекурсивно сортируем меньше и больше, затем склеиваем
         Elem * BegQless = NULL, * BegQequal = NULL, *BegQmore = NULL;
         Elem * EndQless = NULL, * EndQequal = NULL, *EndQmore = NULL;
-        int pivot = (*BegQ)->inf, temp = 0;
+        int pivot = (*BegQ)->inf, temp = 0; //опорный элемент и временная переменная для перемещения
         while (!is_empty(BegQ)) {
             dequeue(BegQ, EndQ, &temp);
             if (pivot > temp) {
@@ -134,7 +140,7 @@ int queue(int args, char * argv[]) {
     int res;
     Elem * BegQdirect = NULL, *EndQdirect = NULL;
     Elem * BegQHoara = NULL, *EndQHoara = NULL;
-    Elem * p = BegQdirect;
+    Elem * p = BegQdirect; //для работы с файлом
     FILE * f;
 
     if (args == 3 && strcmp(argv[1], "--file") == 0) {
@@ -151,7 +157,7 @@ int queue(int args, char * argv[]) {
         }
 
         while (fscanf(f, "%d", &num) == 1) {
-            enqueue(&BegQHoara, &EndQHoara, num);
+            enqueue(&BegQHoara, &EndQHoara, num); //Здесь я использую список Хоара для записи сортированного ряда(просто, чтобы не создавать новый)
             ch = fgetc(f);
             if (ch == '\n' || ch == EOF) break;
         }
@@ -160,48 +166,47 @@ int queue(int args, char * argv[]) {
         print(BegQHoara);
         return 0;
     } else {
-
-        while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
-            enqueue(&BegQdirect, &EndQdirect, num);
-            enqueue(&BegQHoara, &EndQHoara, num);
-
-            if (ch != '\n') {
-                break;
+        while (1) {
+            printf("Вводите числа по очереди, для завершения введите любой нечисловой символ");
+            while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
+                enqueue(&BegQdirect, &EndQdirect, num);
+                enqueue(&BegQHoara, &EndQHoara, num);
+                if (ch != '\n') {
+                    break;
+                }
             }
-        }
-        
-        f = fopen("series_of_numbers.txt", "w");
-        if (f == NULL) {
-            printf("Не удалось открыть файл для записи\n");
-            return 1;
-        }
-        p = BegQdirect;
-        fprintf(f, "");
-        while (p->link != NULL) {
-            fprintf(f, "%d ", p->inf);
-            p = p->link;
-        }
-        fprintf(f, "%d\n", p->inf);
+            
+            f = fopen("series_of_numbers.txt", "w");
+            if (f == NULL) {
+                printf("Не удалось открыть файл для записи\n");
+                return 1;
+            }
+            p = BegQdirect;
+            while (p->link != NULL) {
+                fprintf(f, "%d ", p->inf);
+                p = p->link;
+            }
+            fprintf(f, "%d\n", p->inf);
 
-        direct_sort_classic(&BegQdirect, &EndQdirect);
-        p = BegQdirect;
-        fprintf(f, "");
-        while (p->link != NULL) {
-            fprintf(f, "%d ", p->inf);
-            p = p->link;
+            direct_sort_classic(&BegQdirect, &EndQdirect);
+            p = BegQdirect;
+            while (p->link != NULL) {
+                fprintf(f, "%d ", p->inf);
+                p = p->link;
+            }
+            fprintf(f, "%d", p->inf);
+            fclose(f);        
+
+            //Демонстрация работы сортировки Хоара
+            printf("Несортированный ряд:\n");
+            print(BegQHoara);
+            Hoara_sort(&BegQHoara, &EndQHoara);
+            printf("Отсортированный ряд методом Хоара:\n");
+            print(BegQHoara);
+
+            printf("Повторить работу? (1 - да, 0 - нет)");
+            printf("(Программа считает только первый символ)\n");
+            return 0;
         }
-        fprintf(f, "%d", p->inf);
-        fclose(f);        
-
-        printf("Несортированный ряд:\n");
-        print(BegQHoara);
-        Hoara_sort(&BegQHoara, &EndQHoara);
-        printf("Отсортированный ряд методом Хоара:\n");
-        print(BegQHoara);
-
-        printf("Повторить работу? (1 - да, 0 - нет)");
-        printf("(Программа считает только первый символ)\n");
-        return 0;
     }
-    return 0;
 }
