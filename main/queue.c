@@ -134,23 +134,33 @@ int queue(int args, char * argv[]) {
     int res;
     Elem * BegQdirect = NULL, *EndQdirect = NULL;
     Elem * BegQHoara = NULL, *EndQHoara = NULL;
+    Elem * p = BegQdirect;
+    FILE * f;
 
     if (args == 3 && strcmp(argv[1], "--file") == 0) {
         printf("Чтение из файла %s\n", argv[2]);
-        FILE * f = fopen(argv[2], "r");
+        f = fopen(argv[2], "r");
         if (f == NULL) {
             printf("Ошибка открытия файла\n");
             return 1;
         }
         while (fscanf(f, "%d", &num) == 1) {
             enqueue(&BegQdirect, &EndQdirect, num);
+            ch = fgetc(f);
+            if (ch == '\n' || ch == EOF) break;
+        }
+
+        while (fscanf(f, "%d", &num) == 1) {
             enqueue(&BegQHoara, &EndQHoara, num);
+            ch = fgetc(f);
+            if (ch == '\n' || ch == EOF) break;
         }
         fclose(f);
+        print(BegQdirect);
+        print(BegQHoara);
         return 0;
     } else {
 
-    
         while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
             enqueue(&BegQdirect, &EndQdirect, num);
             enqueue(&BegQHoara, &EndQHoara, num);
@@ -160,31 +170,33 @@ int queue(int args, char * argv[]) {
             }
         }
         
-            
-            
-        printf("Empty: %s\n", is_empty(&BegQdirect) ? "YES" : "NO");
-
-        print(BegQdirect);
+        f = fopen("series_of_numbers.txt", "w");
+        if (f == NULL) {
+            printf("Не удалось открыть файл для записи\n");
+            return 1;
+        }
+        p = BegQdirect;
+        fprintf(f, "");
+        while (p->link != NULL) {
+            fprintf(f, "%d ", p->inf);
+            p = p->link;
+        }
+        fprintf(f, "%d\n", p->inf);
 
         direct_sort_classic(&BegQdirect, &EndQdirect);
-        print(BegQdirect);
-
-        printf("Empty: %s\n", is_empty(&BegQdirect) ? "YES" : "NO");
-
-        while (!is_empty(&BegQdirect)) {
-            dequeue(&BegQdirect, &EndQdirect, &res);
-            printf("pop %d :", res);
-            print(BegQdirect);
+        p = BegQdirect;
+        fprintf(f, "");
+        while (p->link != NULL) {
+            fprintf(f, "%d ", p->inf);
+            p = p->link;
         }
+        fprintf(f, "%d", p->inf);
+        fclose(f);        
 
-        printf("Empty: %s\n", is_empty(&BegQdirect) ? "YES" : "NO");
-
-        
-        print(BegQdirect);
+        printf("Несортированный ряд:\n");
         print(BegQHoara);
-            
-
         Hoara_sort(&BegQHoara, &EndQHoara);
+        printf("Отсортированный ряд методом Хоара:\n");
         print(BegQHoara);
 
         printf("Повторить работу? (1 - да, 0 - нет)");
