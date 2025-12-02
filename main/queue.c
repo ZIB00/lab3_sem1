@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct Elem {
     int inf;
@@ -127,66 +128,68 @@ void Hoara_sort(Elem ** BegQ, Elem ** EndQ) {
 }
 
 
-int queue() {
+int queue(int args, char * argv[]) {
     char ch;
     int num, flag = 1, test;
     int res;
     Elem * BegQdirect = NULL, *EndQdirect = NULL;
     Elem * BegQHoara = NULL, *EndQHoara = NULL;
 
-    while (1) {
-        printf("Введите число: ");
-        if (scanf("%d", &num) == 1) {
-            break; // успешно
+    if (args == 3 && strcmp(argv[1], "--file") == 0) {
+        printf("Чтение из файла %s\n", argv[2]);
+        FILE * f = fopen(argv[2], "r");
+        if (f == NULL) {
+            printf("Ошибка открытия файла\n");
+            return 1;
         }
-        printf("Ошибка! Это не число.\n");
+        while (fscanf(f, "%d", &num) == 1) {
+            enqueue(&BegQdirect, &EndQdirect, num);
+            enqueue(&BegQHoara, &EndQHoara, num);
+        }
+        fclose(f);
+        return 0;
+    } else {
 
-        // очищаем stdin
-        int c;
-        while ((c = fgetc(stdin)) != '\n' && c != EOF);  
-    }
-    while (1) {
+    
         while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
             enqueue(&BegQdirect, &EndQdirect, num);
             enqueue(&BegQHoara, &EndQHoara, num);
 
-        }
-        
-        
-        printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
-
-        print(BegQ);
-
-        direct_sort_classic(&BegQ, &EndQ);
-        print(BegQ);
-
-        printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
-
-        while (!is_empty(&BegQ)) {
-            dequeue(&BegQ, &EndQ, &res);
-            printf("pop %d :", res);
-            print(BegQ);
-        }
-
-        printf("Empty: %s\n", is_empty(&BegQ) ? "YES" : "NO");
-
-        for (size_t i = 0; i < sizeof(test)/sizeof(test[0]); i++) {
-            enqueue(&BegQ, &EndQ, test[i]);
-        print(BegQ);
-        
-
-        Hoara_sort(&BegQ, &EndQ);
-        print(BegQ);
-
-        printf("Повторить работу? (1 - да, 0 - нет)");
-        printf("(Программа считает только первый символ)\n");
-        
-        
-        if (scanf("%c", &ch) == 1) {
-            if (ch == '0') {
+            if (ch != '\n') {
                 break;
             }
         }
+        
+            
+            
+        printf("Empty: %s\n", is_empty(&BegQdirect) ? "YES" : "NO");
+
+        print(BegQdirect);
+
+        direct_sort_classic(&BegQdirect, &EndQdirect);
+        print(BegQdirect);
+
+        printf("Empty: %s\n", is_empty(&BegQdirect) ? "YES" : "NO");
+
+        while (!is_empty(&BegQdirect)) {
+            dequeue(&BegQdirect, &EndQdirect, &res);
+            printf("pop %d :", res);
+            print(BegQdirect);
+        }
+
+        printf("Empty: %s\n", is_empty(&BegQdirect) ? "YES" : "NO");
+
+        
+        print(BegQdirect);
+        print(BegQHoara);
+            
+
+        Hoara_sort(&BegQHoara, &EndQHoara);
+        print(BegQHoara);
+
+        printf("Повторить работу? (1 - да, 0 - нет)");
+        printf("(Программа считает только первый символ)\n");
+        return 0;
     }
     return 0;
 }
