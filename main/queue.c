@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h> 
 
 typedef struct Elem {
     int inf;
@@ -167,12 +168,16 @@ int queue(int args, char * argv[]) {
         return 0;
     } else {
         while (1) {
-            printf("Вводите числа по очереди, для завершения введите любой нечисловой символ");
-            while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
+            printf("Вводите числа по очереди, для завершения введите любой нечисловой символ\n");
+            if (scanf("%d", &num) == 0) {
                 enqueue(&BegQdirect, &EndQdirect, num);
                 enqueue(&BegQHoara, &EndQHoara, num);
-                if (ch != '\n') {
-                    break;
+                while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
+                    enqueue(&BegQdirect, &EndQdirect, num);
+                    enqueue(&BegQHoara, &EndQHoara, num);
+                    if (ch != '\n') {
+                        break;
+                    }
                 }
             }
             
@@ -204,9 +209,28 @@ int queue(int args, char * argv[]) {
             printf("Отсортированный ряд методом Хоара:\n");
             print(BegQHoara);
 
-            printf("Повторить работу? (1 - да, 0 - нет)");
-            printf("(Программа считает только первый символ)\n");
-            return 0;
+            
+            while (1) {
+                printf("Повторить работу? (1 - да, 0 - нет)");
+                if (scanf("%d%c", &num, &ch) == 2 && (num == 0 || num == 1)) {
+                    if (ch == '\n' || ch == ' ') {
+                    break; 
+                    }
+                }
+                printf("Ошибка: введите корректное число.\n");
+                while (getchar() != '\n');
+            }
+            if (num == 0) {
+                break;
+            } else {
+                //Очистка очередей перед повторным вводом
+                while (!is_empty(&BegQdirect)) {
+                    dequeue(&BegQdirect, &EndQdirect, &res);
+                }
+                while (!is_empty(&BegQHoara)) {
+                    dequeue(&BegQHoara, &EndQHoara, &res);
+                }
+            }
         }
     }
 }
