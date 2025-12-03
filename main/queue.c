@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h> 
+#include <ctype.h>
 
 typedef struct Elem {
     int inf;
@@ -28,7 +29,7 @@ int enqueue(Elem ** BegQ, Elem ** EndQ, int inf) {
     Elem * p;
     p = (Elem *)malloc(sizeof(Elem));
     if (p == NULL) {
-        fprintf(stderr, "РћС€РёР±РєР° РІС‹РґРµР»РµРЅРёСЏ РїР°РјСЏС‚Рё\n");
+        fprintf(stderr, "Ошибка выделения памяти\n");
         return 0;
     }
     p->inf = inf;
@@ -90,10 +91,10 @@ void direct_sort_classic(Elem ** BegQ, Elem ** EndQ) {
 
 void Hoara_sort(Elem ** BegQ, Elem ** EndQ) {
     if (!is_empty(BegQ)) {
-        //РРґРµСЏ: 3 РѕС‡РµСЂРµРґРё - РјРµРЅСЊС€Рµ, СЂР°РІРЅРѕ, Р±РѕР»СЊС€Рµ РѕРїРѕСЂРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р°, СЂРµРєСѓСЂСЃРёРІРЅРѕ СЃРѕСЂС‚РёСЂСѓРµРј РјРµРЅСЊС€Рµ Рё Р±РѕР»СЊС€Рµ, Р·Р°С‚РµРј СЃРєР»РµРёРІР°РµРј
+        //Идея: 3 очереди - меньше, равно, больше опорного элемента, рекурсивно сортируем меньше и больше, затем склеиваем
         Elem * BegQless = NULL, * BegQequal = NULL, *BegQmore = NULL;
         Elem * EndQless = NULL, * EndQequal = NULL, *EndQmore = NULL;
-        int pivot = (*BegQ)->inf, temp = 0; //РѕРїРѕСЂРЅС‹Р№ СЌР»РµРјРµРЅС‚ Рё РІСЂРµРјРµРЅРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РїРµСЂРµРјРµС‰РµРЅРёСЏ
+        int pivot = (*BegQ)->inf, temp = 0; //опорный элемент и временная переменная для перемещения
         while (!is_empty(BegQ)) {
             dequeue(BegQ, EndQ, &temp);
             if (pivot > temp) {
@@ -134,23 +135,104 @@ void Hoara_sort(Elem ** BegQ, Elem ** EndQ) {
     }
 }
 
+void clear_queue(Elem** BegQ, Elem** EndQ) {
+    int num;
+    while (!is_empty(BegQ)) {
+        dequeue(BegQ, EndQ, &num);
+    }
+}
+
+int test() {
+    FILE* f = fopen("test_numbers.txt", "r");
+    clock_t total_start = clock();
+    char ch;
+    int line_number = 0;
+
+    while (1) {
+        Elem *BegQdirect = NULL, *EndQdirect = NULL;
+        Elem *BegQHoara = NULL, *EndQHoara = NULL;
+
+        int num = 0;
+        int sign = 1;
+        int has_number = 0;
+
+        while ((ch = fgetc(f)) != '\n' && ch != EOF) {
+            if (isdigit(ch)) {
+                num = num * 10 + (ch - '0');
+                has_number = 1;
+            } else if (ch == '-') {
+                sign = -1;
+            } else if (ch == ' ' || ch == '\t') {
+                if (has_number) {
+                    int value = sign * num;
+                    enqueue(&BegQdirect, &EndQdirect, value);
+                    enqueue(&BegQHoara, &EndQHoara, value);
+                    num = 0;
+                    sign = 1;
+                    has_number = 0;
+                }
+            }
+        }
+
+        if (has_number) {
+            int value = sign * num;
+            enqueue(&BegQdirect, &EndQdirect, value);
+            enqueue(&BegQHoara, &EndQHoara, value);
+        }
+        if (ch == EOF && is_empty(&BegQdirect)) {
+            break;
+        }
+
+        line_number++;
+        int count = 0;
+        for (Elem* p = BegQdirect; p; p = p->link) count++;
+
+        printf("=== Строка %d (элементов: %d) ===\n", line_number, count);
+
+        if (count == 0) {
+            printf("Пустая строка — пропускаем.\n\n");
+            continue;
+        }
+
+        clock_t start = clock();
+        direct_sort_classic(&BegQdirect, &EndQdirect);
+        clock_t end = clock();
+        double time_direct = (double)(end - start) / CLOCKS_PER_SEC;
+
+        start = clock();
+        Hoara_sort(&BegQHoara, &EndQHoara);
+        end = clock();
+        double time_hoara = (double)(end - start) / CLOCKS_PER_SEC;
+
+        printf("Прямая сортировка:  %.6f сек.\n", time_direct);
+        printf("Сортировка Хоара:   %.6f сек.\n\n", time_hoara);
+
+        // Очистка
+        clear_queue(&BegQdirect, &EndQdirect);
+        clear_queue(&BegQHoara, &EndQHoara);
+
+        if (ch == EOF) break;
+    }
+    fclose(f);
+    return 0;
+}
 
 int queue(int args, char * argv[]) {
     char ch;
     int num, flag = 1, test;
-    int res;
+    int res, c;
     Elem * BegQdirect = NULL, *EndQdirect = NULL;
     Elem * BegQHoara = NULL, *EndQHoara = NULL;
-    Elem * p = BegQdirect; //РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ С„Р°Р№Р»РѕРј
+    Elem * p = BegQdirect; //для работы с файлом
     FILE * f;
     clock_t start, end;
     double duration;
 
     if (args == 3 && strcmp(argv[1], "--file") == 0) {
-        printf("Р§С‚РµРЅРёРµ РёР· С„Р°Р№Р»Р° %s\n", argv[2]);
+        printf("Чтение из файла %s\n", argv[2]);
         f = fopen(argv[2], "r");
         if (f == NULL) {
-            printf("РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ С„Р°Р№Р»Р°\n");
+            printf("Ошибка открытия файла\n");
             return 1;
         }
         while (fscanf(f, "%d", &num) == 1) {
@@ -160,7 +242,7 @@ int queue(int args, char * argv[]) {
         }
 
         while (fscanf(f, "%d", &num) == 1) {
-            enqueue(&BegQHoara, &EndQHoara, num); //Р—РґРµСЃСЊ СЏ РёСЃРїРѕР»СЊР·СѓСЋ СЃРїРёСЃРѕРє РҐРѕР°СЂР° РґР»СЏ Р·Р°РїРёСЃРё СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅРѕРіРѕ СЂСЏРґР°(РїСЂРѕСЃС‚Рѕ, С‡С‚РѕР±С‹ РЅРµ СЃРѕР·РґР°РІР°С‚СЊ РЅРѕРІС‹Р№)
+            enqueue(&BegQHoara, &EndQHoara, num); //Здесь я использую список Хоара для записи сортированного ряда(просто, чтобы не создавать новый)
             ch = fgetc(f);
             if (ch == '\n' || ch == EOF) break;
         }
@@ -170,74 +252,74 @@ int queue(int args, char * argv[]) {
         return 0;
     } else {
         while (1) {
-            printf("Р’РІРѕРґРёС‚Рµ С‡РёСЃР»Р° РїРѕ РѕС‡РµСЂРµРґРё, РґР»СЏ Р·Р°РІРµСЂС€РµРЅРёСЏ РІРІРµРґРёС‚Рµ Р»СЋР±РѕР№ РЅРµС‡РёСЃР»РѕРІРѕР№ СЃРёРјРІРѕР»\n");
-            while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
+            printf("Вводите целые числа по очереди. Для завершения введите любой нечисловой символ:\n");
+
+            // Пока scanf успешно читает целое число
+            while (scanf("%d", &num) == 1) {
                 enqueue(&BegQdirect, &EndQdirect, num);
                 enqueue(&BegQHoara, &EndQHoara, num);
-                if (ch != '\n') {
-                    break;
-                }
             }
             
-            f = fopen("series_of_numbers.txt", "w");
-            if (f == NULL) {
-                printf("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РґР»СЏ Р·Р°РїРёСЃРё\n");
-                return 1;
+            while((c = getchar()) != '\n' && c != EOF);
+            printf("Ввод завершён.\n");
+            
+            if (!is_empty(&BegQdirect)) {
+                f = fopen("series_of_numbers.txt", "w");
+                if (f == NULL) {
+                    printf("Не удалось открыть файл для записи\n");
+                    return 1;
+                }
+                p = BegQdirect;
+                while (p->link != NULL) {
+                    fprintf(f, "%d ", p->inf);
+                    p = p->link;
+                }
+                fprintf(f, "%d\n", p->inf);
+
+                start = clock();
+                direct_sort_classic(&BegQdirect, &EndQdirect);
+                end = clock();
+                duration = (double)(end - start) / CLOCKS_PER_SEC;
+                printf("Время прямой сортировки: %.6f сек.\n", duration);
+
+                p = BegQdirect;
+                while (p->link != NULL) {
+                    fprintf(f, "%d ", p->inf);
+                    p = p->link;
+                }
+                fprintf(f, "%d", p->inf);
+                fclose(f);        
+
+                //Демонстрация работы сортировки Хоара
+                printf("Несортированный ряд:\n");
+                print(BegQHoara);
+                start = clock();
+                Hoara_sort(&BegQHoara, &EndQHoara);
+                end = clock();
+                duration = (double)(end - start) / CLOCKS_PER_SEC;
+                printf("Время прямой сортировки: %.6f сек.\n", duration);
+                printf("Отсортированный ряд методом Хоара:\n");
+                print(BegQHoara);
             }
-            p = BegQdirect;
-            while (p->link != NULL) {
-                fprintf(f, "%d ", p->inf);
-                p = p->link;
-            }
-            fprintf(f, "%d\n", p->inf);
-
-            start = clock();
-            direct_sort_classic(&BegQdirect, &EndQdirect);
-            end = clock();
-            duration = (double)(end - start) / CLOCKS_PER_SEC;
-            printf("Р’СЂРµРјСЏ РїСЂСЏРјРѕР№ СЃРѕСЂС‚РёСЂРѕРІРєРё: %.6f СЃРµРє.\n", duration);
-
-            p = BegQdirect;
-            while (p->link != NULL) {
-                fprintf(f, "%d ", p->inf);
-                p = p->link;
-            }
-            fprintf(f, "%d", p->inf);
-            fclose(f);        
-
-            //Р”РµРјРѕРЅСЃС‚СЂР°С†РёСЏ СЂР°Р±РѕС‚С‹ СЃРѕСЂС‚РёСЂРѕРІРєРё РҐРѕР°СЂР°
-            printf("РќРµСЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ СЂСЏРґ:\n");
-            print(BegQHoara);
-            start = clock();
-            Hoara_sort(&BegQHoara, &EndQHoara);
-            end = clock();
-            duration = (double)(end - start) / CLOCKS_PER_SEC;
-            printf("Р’СЂРµРјСЏ РїСЂСЏРјРѕР№ СЃРѕСЂС‚РёСЂРѕРІРєРё: %.6f СЃРµРє.\n", duration);
-            printf("РћС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ СЂСЏРґ РјРµС‚РѕРґРѕРј РҐРѕР°СЂР°:\n");
-            print(BegQHoara);
-
+            
             
             while (1) {
-                printf("РџРѕРІС‚РѕСЂРёС‚СЊ СЂР°Р±РѕС‚Сѓ? (1 - РґР°, 0 - РЅРµС‚)");
-                if (scanf("%d%c", &num, &ch) == 2 && (num == 0 || num == 1)) {
-                    if (ch == '\n' || ch == ' ') {
-                    break; 
-                    }
+                printf("Повторить работу? (1 - да, 0 - нет): ");
+                if (scanf("%d", &num) == 1 && (num == 0 || num == 1)) {
+                    while ((c = getchar()) != '\n' && c != EOF);
+                    break;
+                } else {
+                    while ((c = getchar()) != '\n' && c != EOF);
+                    printf("Ошибка: введите 1 или 0.\n");
                 }
-                printf("РћС€РёР±РєР°: РІРІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅРѕРµ С‡РёСЃР»Рѕ.\n");
-                while (getchar() != '\n');
             }
             if (num == 0) {
                 break;
             } else {
-                //РћС‡РёСЃС‚РєР° РѕС‡РµСЂРµРґРµР№ РїРµСЂРµРґ РїРѕРІС‚РѕСЂРЅС‹Рј РІРІРѕРґРѕРј
-                while (!is_empty(&BegQdirect)) {
-                    dequeue(&BegQdirect, &EndQdirect, &res);
-                }
-                while (!is_empty(&BegQHoara)) {
-                    dequeue(&BegQHoara, &EndQHoara, &res);
-                }
+                //Очистка очередей перед повторным вводом
+                clear_queue(&BegQdirect, &EndQdirect);
+                clear_queue(&BegQHoara, &EndQHoara);
             }
         }
-    }
+    }   
 }

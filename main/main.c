@@ -6,5 +6,6 @@ int main(int args, char * argv[]) {
     setlocale(LC_ALL, "Russian");
 
     queue(args, argv);
+    test();
     return 0;
 }
