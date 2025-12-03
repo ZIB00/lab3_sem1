@@ -143,6 +143,8 @@ int queue(int args, char * argv[]) {
     Elem * BegQHoara = NULL, *EndQHoara = NULL;
     Elem * p = BegQdirect; //для работы с файлом
     FILE * f;
+    clock_t start, end;
+    double duration;
 
     if (args == 3 && strcmp(argv[1], "--file") == 0) {
         printf("Чтение из файла %s\n", argv[2]);
@@ -169,15 +171,11 @@ int queue(int args, char * argv[]) {
     } else {
         while (1) {
             printf("Вводите числа по очереди, для завершения введите любой нечисловой символ\n");
-            if (scanf("%d", &num) == 0) {
+            while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
                 enqueue(&BegQdirect, &EndQdirect, num);
                 enqueue(&BegQHoara, &EndQHoara, num);
-                while (scanf("%d", &num) == 1 && scanf("%c", &ch) == 1) {
-                    enqueue(&BegQdirect, &EndQdirect, num);
-                    enqueue(&BegQHoara, &EndQHoara, num);
-                    if (ch != '\n') {
-                        break;
-                    }
+                if (ch != '\n') {
+                    break;
                 }
             }
             
@@ -193,7 +191,12 @@ int queue(int args, char * argv[]) {
             }
             fprintf(f, "%d\n", p->inf);
 
+            start = clock();
             direct_sort_classic(&BegQdirect, &EndQdirect);
+            end = clock();
+            duration = (double)(end - start) / CLOCKS_PER_SEC;
+            printf("Время прямой сортировки: %.6f сек.\n", duration);
+
             p = BegQdirect;
             while (p->link != NULL) {
                 fprintf(f, "%d ", p->inf);
@@ -205,7 +208,11 @@ int queue(int args, char * argv[]) {
             //Демонстрация работы сортировки Хоара
             printf("Несортированный ряд:\n");
             print(BegQHoara);
+            start = clock();
             Hoara_sort(&BegQHoara, &EndQHoara);
+            end = clock();
+            duration = (double)(end - start) / CLOCKS_PER_SEC;
+            printf("Время прямой сортировки: %.6f сек.\n", duration);
             printf("Отсортированный ряд методом Хоара:\n");
             print(BegQHoara);
 
