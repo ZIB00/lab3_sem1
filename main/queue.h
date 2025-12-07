@@ -13,6 +13,8 @@ int dequeue(Elem ** BegQ, Elem ** EndQ, int * r);
 void direct_sort_classic(Elem ** BegQ, Elem ** EndQ);
 void Hoara_sort(Elem ** BegQ, Elem ** EndQ);
 int test();
-int queue(int args, char * argv[]);
+int queue();
+int read(int args, char * argv[]);
+void benchmark_generated_data(void);
 
 #endif
