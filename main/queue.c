@@ -143,10 +143,49 @@ void clear_queue(Elem** BegQ, Elem** EndQ) {
     }
 }
 
+void control(Elem * BegQ, Elem * EndQ) {
+    int num, c;
+    while (1) {
+        while (1) {
+            printf("1 - Добавить в конец, 0 - Удалить из начала, иной символ - выход из редактирования\n");
+            if (scanf("%d", &num) == 1 && (num == 0 || num == 1)) {
+                while ((c = getchar()) != '\n' && c != EOF);
+                break;
+            } else {
+                while ((c = getchar()) != '\n' && c != EOF);
+                num = 3;
+                break;
+
+            }
+        }
+        if (num == 3) {
+            break;
+        } else if (num == 1) {
+            while (1) {
+                printf("Введите число\n");
+                if (scanf("%d", &num) == 1) {
+                    while ((c = getchar()) != '\n' && c != EOF);
+                    break;
+                } else {
+                    while ((c = getchar()) != '\n' && c != EOF);
+                    printf("Ошибка: введите число.\n");
+                }
+            }
+            enqueue(&BegQ, &EndQ, num);
+            printf("Очередь: \n");
+            print(BegQ);
+        } else {
+            dequeue(&BegQ, &EndQ, &num);
+            printf("Вы извлекли число %d\n", num);
+            printf("Очередь: \n");
+            print(BegQ);
+        }
+    }
+}
+
 int queue() {
     char ch;
-    int num, flag = 1, test;
-    int res, c;
+    int num, c;
     Elem * BegQdirect = NULL, *EndQdirect = NULL;
     Elem * BegQHoara = NULL, *EndQHoara = NULL;
     Elem * p = BegQdirect; //для работы с файлом
@@ -195,7 +234,20 @@ int queue() {
             printf("Сортированный ряд:\n");
             print(BegQHoara);
         }
-            
+
+        while (1) {
+            printf("Изменить очередь? (1 - да, 0 - нет): ");
+            if (scanf("%d", &num) == 1 && (num == 0 || num == 1)) {
+                while ((c = getchar()) != '\n' && c != EOF);
+                break;
+            } else {
+                while ((c = getchar()) != '\n' && c != EOF);
+                printf("Ошибка: введите 1 или 0.\n");
+            }
+        }
+        if (num == 1) {
+            control(BegQdirect, EndQdirect);
+        }
             
         while (1) {
             printf("Повторить работу? (1 - да, 0 - нет): ");
@@ -219,8 +271,7 @@ int queue() {
 
 int read(int args, char * argv[]) {
     char ch;
-    int num, flag = 1, test;
-    int res, c;
+    int num, c;
     Elem * BegQdirect = NULL, *EndQdirect = NULL;
     Elem * BegQHoara = NULL, *EndQHoara = NULL;
     Elem * p = BegQdirect; //для работы с файлом
@@ -247,51 +298,4 @@ int read(int args, char * argv[]) {
     print(BegQdirect);
     print(BegQHoara);
     return 0;
-}
-
-void benchmark_generated_data(void) {
-    srand((unsigned int)time(NULL));
-
-    Elem *BegQdirect = NULL, *EndQdirect = NULL;
-    Elem *BegQHoara = NULL, *EndQHoara = NULL;
-    clock_t start, end;
-    int num;
-
-    printf("Прямая сортировка\n");
-    int n = 500;
-    for (int test = 0; test < 10; test++) {
-        for (int i = 0; i < n; i++) {
-            num = rand();
-            enqueue(&BegQdirect, &EndQdirect, num);
-        }
-
-        start = clock();
-        direct_sort_classic(&BegQdirect, &EndQdirect);
-        end = clock();
-        double time_direct = (double)(end - start) / CLOCKS_PER_SEC;
-
-        printf("%d %f\n", n, time_direct);
-
-        clear_queue(&BegQdirect, &EndQdirect);
-        n += 500;
-    }
-
-    printf("Сортировка Хоара\n");
-    n = 200000;
-    for (int test = 0; test < 10; test++) {
-        for (int i = 0; i < n; i++) {
-            num = rand();
-            enqueue(&BegQHoara, &EndQHoara, num);
-        }
-
-        start = clock();
-        Hoara_sort(&BegQHoara, &EndQHoara);
-        end = clock();
-        double time_hoara = (double)(end - start) / CLOCKS_PER_SEC;
-
-        printf("%d %f\n", n, time_hoara);
-
-        clear_queue(&BegQHoara, &EndQHoara);
-        n += 200000;
-    }
 }
