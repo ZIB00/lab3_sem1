@@ -1,0 +1,46 @@
+void benchmark_generated_data(void) {
+    srand((unsigned int)time(NULL));
+
+    Elem *BegQdirect = NULL, *EndQdirect = NULL;
+    Elem *BegQHoara = NULL, *EndQHoara = NULL;
+    clock_t start, end;
+    int num;
+
+    printf("Прямая сортировка\n");
+    int n = 100;
+    for (int test = 0; test < 50; test++) {
+        for (int i = 0; i < n; i++) {
+            num = rand();
+            enqueue(&BegQdirect, &EndQdirect, num);
+        }
+
+        start = clock();
+        direct_sort_classic(&BegQdirect, &EndQdirect);
+        end = clock();
+        double time_direct = (double)(end - start) / CLOCKS_PER_SEC;
+
+        printf("%d %f\n", n, time_direct);
+
+        clear_queue(&BegQdirect, &EndQdirect);
+        n += 100;
+    }
+
+    //printf("Сортировка Хоара\n");
+    n = 1000;
+    for (int test = 0; test < 200; test++) {
+        for (int i = 0; i < n; i++) {
+            num = rand();
+            enqueue(&BegQHoara, &EndQHoara, num);
+        }
+
+        start = clock();
+        Hoara_sort(&BegQHoara, &EndQHoara);
+        end = clock();
+        double time_hoara = (double)(end - start) / CLOCKS_PER_SEC;
+
+        printf("%d %f\n", n, time_hoara);
+
+        clear_queue(&BegQHoara, &EndQHoara);
+        n += 1000;
+    }
+}
